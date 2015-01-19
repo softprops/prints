@@ -17,7 +17,7 @@ object Header {
 
   def apply(
     alg: String,
-    typ: String = "JWT",
+    typ: Option[String] = Some("JWT"),
     cty: Option[String] = None,
     etc: Map[String, String] = Map.empty) = {
     val alg0 = alg
@@ -25,7 +25,7 @@ object Header {
     val cty0 = cty
     new Header {
       private[this] val props: Map[String, String] =
-        Map("alg" -> alg0, "typ" -> typ0) ++ etc ++ cty0.map(("cty" -> _))
+        Map("alg" -> alg0) ++ cty0.map(("cty" -> _)) ++ typ0.map(("typ" -> _)) ++ etc
 
       val algo = alg0
 
