@@ -19,7 +19,7 @@ object Header {
     alg: String,
     typ: String = "JWT",
     cty: Option[String] = None,
-    etc: Map[String, String] = Map.empty[String, String]) = {
+    etc: Map[String, String] = Map.empty) = {
     val alg0 = alg
     val typ0 = typ
     val cty0 = cty
@@ -29,10 +29,11 @@ object Header {
 
       val algo = alg0
 
-      lazy val bytes = compact(render((("alg" -> alg0) ~ ("typ" -> typ0) ~ ("cty" -> cty0) /: etc) {
-        case (obj, (key, value)) =>
-          obj.merge(JObject((key, JString(value)) :: Nil))
-      })).getBytes("utf8")
+      lazy val bytes =
+        compact(render((("alg" -> alg0) ~ ("typ" -> typ0) ~ ("cty" -> cty0) /: etc) {
+          case (obj, (key, value)) =>
+            obj.merge(JObject((key, JString(value)) :: Nil))
+        })).getBytes("utf8")
 
       def get(name: String) = props.get(name)
     }
