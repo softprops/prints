@@ -14,7 +14,7 @@ object JWT {
 
  def apply(header: Header, claims: Claims, key: Array[Byte]): Option[Array[Byte]] = {
    val payload = encode(header.bytes) ++ dot ++ encode(claims.bytes)   
-   Algorithm.sign(header.algo, payload, key).map(payload ++ dot ++  _)
+   Algorithm.sign(header.algo, payload, key).map(payload ++ dot ++  encode(_))
  }
 
  def unapply(str: String): Option[(Header, Claims, String)] = str.split("[.]") match {
