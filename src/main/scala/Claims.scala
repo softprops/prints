@@ -35,24 +35,25 @@ object Claims {
           (`name`, JString(value)) <- obj
         } yield value).headOption
 
-        def bytes = str.getBytes("utf8")
+        lazy val bytes = str.getBytes("utf8")
       }
     }
 
   def apply(values: (String, String)*): Claims =
     new Claims {
-      val map = values.toMap
-      val bytes = Claims.bytes((JObject(Nil) /: map) {
+      private[this] val map = values.toMap
+      lazy val bytes = Claims.bytes((JObject(Nil) /: map) {
         case (obj, (key, value)) =>
           val that = JObject(JField(key, JString(value)) :: Nil)
           obj.merge(that)
       })
+
       def get(name: String) = map.get(name)
     }
 
   def apply(values: JValue): Claims =
     new Claims {
-      val bytes = Claims.bytes(values)
+      lazy val bytes = Claims.bytes(values)
       def get(name: String): Option[String] = (for {
         JObject(obj)             <- values
         (`name`, JString(value)) <- obj
