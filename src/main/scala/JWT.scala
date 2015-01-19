@@ -34,7 +34,7 @@ object JWT {
         Header(header) <- decode(headerStr).right.toOption
         Claims(claims) <- decode(claimsStr).right.toOption
       } yield (header, claims, sig)
-        case _ =>
-          None
+    case _ =>
+      None
   }
 }
