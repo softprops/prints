@@ -6,6 +6,9 @@ import org.json4s.native.JsonMethods.parseOpt
 /** https://tools.ietf.org/html/draft-ietf-oauth-json-web-token-32#section-5 */
 trait Header {
   def algo: String
+  def cty = get("cty")
+  def typ = get("typ")
+  def get(name: String): Option[String]
   def bytes: Array[Byte]
 }
 
@@ -15,10 +18,13 @@ object Header {
      (for {
        JObject(obj)          <- js
        ("alg", JString(alg)) <- obj
-     } yield alg).headOption
-    }.map { alg =>
+     } yield (obj, alg)).headOption
+    }.map { case (obj, alg) =>
       new Header {
         def algo = alg
+        def get(name: String) = (for {
+          (`name`, JString(value)) <- obj
+        } yield value).headOption
         def bytes = str.getBytes("utf8")
       }
     }
