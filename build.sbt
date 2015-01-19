@@ -12,5 +12,6 @@ resolvers += "softprops-maven" at "http://dl.bintray.com/content/softprops/maven
 
 libraryDependencies ++= Seq(
   "me.lessis" %% "base64" % "0.1.1",
-  "org.json4s" %% "json4s-native" % "3.2.11"
+  "org.json4s" %% "json4s-native" % "3.2.11",
+  "org.scalatest" %% "scalatest" % "2.2.1" % "test"
 )
