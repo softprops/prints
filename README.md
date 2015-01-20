@@ -26,7 +26,7 @@ val header = prints.Header("HS256")
 
 Claims represent some metadata meant for passing between two parties. In practice this can be any arbitrary data. Prints provides  factory methods for creating sets of claims from key value pairs of a json4s JValue.
 
-```
+```scala
 val claims = prints.Claims("foo" -> "bar")
 ```
 
