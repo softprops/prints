@@ -29,8 +29,10 @@ class JWTSpec extends FunSpec {
     }
 
     it ("should verify what it creates") {
-      val verified = JWT.verify("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJiYXIifQ==.9EuBjGzXHRD27zPobLmSWM6LQ7zyE8O6nvTC0_yB5a0=",
-                                "test".getBytes("utf8"))
+      val header = Header("HS256")
+      val claims = Claims("foo" -> "bar")
+      val key = "test".getBytes("utf8")
+      val verified = JWT(header, claims, key).map(jwt => JWT.verify(new String(jwt), key))
       assert(verified.isDefined)
     }
   }
