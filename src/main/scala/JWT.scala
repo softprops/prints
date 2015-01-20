@@ -23,18 +23,23 @@ object JWT {
     concat(concat(a, dot), b)
   }
 
-  def apply(header: Header, claims: Claims, key: Array[Byte]): Option[Array[Byte]] = {
+  def apply(
+    header: Header,
+    claims: Claims,
+    key: Array[Byte]): Option[Array[Byte]] = {
     val payload = join(encode(header.bytes), encode(claims.bytes))
-    Algorithm.sign(header.algo, payload, key).map( sig => join(payload, encode(sig)))
+    Algorithm.sign(header.algo, payload, key)
+      .map(sig => join(payload, encode(sig)))
   }
 
-  def unapply(str: String): Option[(Header, Claims, String)] = str.split("[.]") match {
-    case Array(headerStr, claimsStr, sig) =>
-      for {
-        Header(header) <- decode(headerStr).right.toOption
-        Claims(claims) <- decode(claimsStr).right.toOption
-      } yield (header, claims, sig)
-    case _ =>
-      None
-  }
+  def unapply(str: String): Option[(Header, Claims, String)] =
+    str.split("[.]") match {
+      case Array(headerStr, claimsStr, sig) =>
+        for {
+          Header(header) <- decode(headerStr).right.toOption
+          Claims(claims) <- decode(claimsStr).right.toOption
+        } yield (header, claims, sig)
+      case _ =>
+        None
+    }
 }
