@@ -30,7 +30,7 @@ object JWT {
   def apply(
     header: Header,
     claims: Claims,
-    key: Array[Byte]): Option[Array[Byte]] = {
+    key: Algorithm.Key): Option[Array[Byte]] = {
     val payload = join(encode(header.bytes), encode(claims.bytes))
     Algorithm.sign(header.algo, payload, key)
       .map(sig => join(payload, encode(sig)))
@@ -49,7 +49,7 @@ object JWT {
     }
 
   /** verifies signature of unpacked jwt */
-  def verify(jwt: (Header, Claims, Array[Byte]), key: Array[Byte]): Option[(Header, Claims, Array[Byte])] =
+  def verify(jwt: (Header, Claims, Array[Byte]), key: Algorithm.Key): Option[(Header, Claims, Array[Byte])] =
     jwt match {
       case (header, claims, sig) =>
         header.algo match {
@@ -65,6 +65,6 @@ object JWT {
     }
 
   /** special case of verify where application is aware of key associated with jwt before inpacking */
-  def verify(str: String, key: Array[Byte]): Option[(Header, Claims, Array[Byte])] =
+  def verify(str: String, key: Algorithm.Key): Option[(Header, Claims, Array[Byte])] =
     unapply(str).flatMap(verify(_, key))
 }
