@@ -59,6 +59,5 @@ val decoded = jwt match {
 }
 ```
 
-
 Doug Tangren (softprops) 2015
 

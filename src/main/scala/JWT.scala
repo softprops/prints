@@ -48,9 +48,10 @@ object JWT {
         None
     }
 
-  def verify(str: String, key: Array[Byte]): Option[(Header, Claims, Array[Byte])] =
-    str match {
-      case JWT(header, claims, sig) =>
+  /** verifies signature of unpacked jwt */
+  def verify(jwt: (Header, Claims, Array[Byte]), key: Array[Byte]): Option[(Header, Claims, Array[Byte])] =
+    jwt match {
+      case (header, claims, sig) =>
         header.algo match {
           case "none" =>
             if (sig.length == 0) None
@@ -61,7 +62,9 @@ object JWT {
                 .exists(Arrays.equals(_, sig))) Some(header, claims, sig)
             else None
         }
-      case _ =>
-        None
     }
+
+  /** special case of verify where application is aware of key associated with jwt before inpacking */
+  def verify(str: String, key: Array[Byte]): Option[(Header, Claims, Array[Byte])] =
+    unapply(str).flatMap(verify(_, key))
 }
