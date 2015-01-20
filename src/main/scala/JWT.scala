@@ -33,7 +33,7 @@ object JWT {
   }
 
   def unapply(str: String): Option[(Header, Claims, String)] =
-    str.split("[.]") match {
+    if (str.indexOf(".") < 0) None else str.split("[.]", 3) match {
       case Array(headerStr, claimsStr, sig) =>
         for {
           Header(header) <- decode(headerStr).right.toOption
