@@ -33,10 +33,10 @@ class JWTSpec extends FunSpec {
       val clients = Map("1" -> "test".getBytes("utf8"))
       val claims = Claims("aud" -> "1", "foo" -> "bar")
       val verified = for {
-        JWT(h, c, s)  <- JWT(header, claims, clients("1")).map(new String(_))
-        client     <- c.get("aud")
-        key        <- clients.get(client)
-        (_, vc, _) <- JWT.verify((h, c, s), key)
+        JWT(h, c, s) <- JWT(header, claims, clients("1")).map(new String(_))
+        client       <- c.get("aud")
+        key          <- clients.get(client)
+        (_, vc, _)   <- JWT.verify((h, c, s), key)
       } yield vc
       assert(verified.isDefined)
     }
