@@ -27,5 +27,11 @@ class JWTSpec extends FunSpec {
                "test".getBytes("utf8")).map(new String(_))
              === Some("eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJiYXIifQ==.j0C9Km2iSDyASM-A74nriUpCh6PqHQUW-4Gx54WfsJLbI0EyMGdMybqF04YlpJb71F9bC4Qrny4cvB_F3fv3Dw=="))
     }
+
+    it ("should verify what it creates") {
+      val verified = JWT.verify("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJiYXIifQ==.9EuBjGzXHRD27zPobLmSWM6LQ7zyE8O6nvTC0_yB5a0=",
+                                "test".getBytes("utf8"))
+      assert(verified.isDefined)
+    }
   }
 }

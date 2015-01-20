@@ -2,6 +2,7 @@ package prints
 
 import base64.Encode.urlSafe
 import org.json4s.native.JsonMethods.parseOpt
+import java.util.Arrays
 
 object JWT {
   private[this] val dot = ".".getBytes
@@ -9,8 +10,11 @@ object JWT {
   private def encode(bytes: Array[Byte]): Array[Byte] =
     base64.Encode.urlSafe(bytes)
 
+  private def decodeBytes(str: String) =
+    base64.Decode.urlSafe(str)
+
   private def decode(str: String) =
-    base64.Decode.urlSafe(str).right.map(new String(_, "utf8"))
+    decodeBytes(str).right.map(new String(_, "utf8"))
 
   /** join two byte arrays separating with a '.' */
   private def join(a: Array[Byte], b: Array[Byte]) = {
@@ -32,13 +36,31 @@ object JWT {
       .map(sig => join(payload, encode(sig)))
   }
 
-  def unapply(str: String): Option[(Header, Claims, String)] =
+  def unapply(str: String): Option[(Header, Claims, Array[Byte])] =
     if (str.indexOf(".") < 0) None else str.split("[.]", 3) match {
-      case Array(headerStr, claimsStr, sig) =>
+      case Array(headerStr, claimsStr, sigStr) =>
         for {
           Header(header) <- decode(headerStr).right.toOption
           Claims(claims) <- decode(claimsStr).right.toOption
+          sig            <- decodeBytes(sigStr).right.toOption
         } yield (header, claims, sig)
+      case _ =>
+        None
+    }
+
+  def verify(str: String, key: Array[Byte]): Option[(Header, Claims, Array[Byte])] =
+    str match {
+      case JWT(header, claims, sig) =>
+        header.algo match {
+          case "none" =>
+            if (sig.length == 0) None
+            else Some(header, claims, sig)
+          case algo =>
+            val payload = join(encode(header.bytes), encode(claims.bytes))
+            if (Algorithm.sign(algo, payload, key)
+                .exists(Arrays.equals(_, sig))) Some(header, claims, sig)
+            else None
+        }
       case _ =>
         None
     }
