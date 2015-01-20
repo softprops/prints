@@ -13,7 +13,8 @@ object Algorithm {
     def apply(payload: Array[Byte], key: Array[Byte]): Array[Byte] =
       bytes
   }
-  private def hmac(alg: String) = (alg -> new HmacSha(alg))
+  private def hmac(key: String, alg: String) =
+    (key -> new HmacSha(alg))
   class HmacSha(alg: String) extends Algorithm {
     def apply(payload: Array[Byte], key: Array[Byte]): Array[Byte] = {
       val sec = new SecretKeySpec(key, alg)
@@ -24,9 +25,9 @@ object Algorithm {
   }
   val supported =
     (Map("none" -> Algorithm.None)
-     + hmac("HmacSHA256")
-     + hmac("HmacSHA384")
-     + hmac("HS512"))
+     + hmac("HS256", "HmacSHA256")
+     + hmac("HS384", "HmacSHA384")
+     + hmac("HS512", "HmacSHA512"))
 
   def apply(alg: String) = supported.get(alg)
 
