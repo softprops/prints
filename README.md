@@ -16,7 +16,7 @@ A jwt token is made up of 3 parts. A (JOSE) [header](https://tools.ietf.org/html
 
 ### headers
 
-The only required property of a header is a signing algorithm identifier. This library current supports "none" (no signing), "HS256" (HmacSHA256), "HS384" (HmacSHA384), and "HS512" (HmacSHA512). There's room to support more. Feel free to [open a pull request](https://github.com/softprops/prints/pulls) and do so!
+The only required property of a header is a signing algorithm identifier. This library current supports "none" (no signing), "HS256" (HmacSHA256), "HS384" (HmacSHA384), "HS512" (HmacSHA512), "RS256" (SHA256withRSA), "RS384" (SHA384withRSA), and "RS512" (SHA512withRSA). There's room to support more. Feel free to [open a pull request](https://github.com/softprops/prints/pulls) and do so!
 
 ```scala
 val header = prints.Header("HS256")
@@ -24,7 +24,7 @@ val header = prints.Header("HS256")
 
 ### claims
 
-Claims represent some metadata meant for passing between two parties. In practice this can be any arbitrary data. Prints provides  factory methods for creating sets of claims from key value pairs of a json4s JValue.
+Claims represent some metadata meant for passing between two parties. In practice this can be any arbitrary data. Prints provides factory methods for creating sets of claims from key value pairs of a json4s JValue.
 
 ```scala
 val claims = prints.Claims("foo" -> "bar")
@@ -32,12 +32,14 @@ val claims = prints.Claims("foo" -> "bar")
 
 ### making tokens
 
-Given a `Header`, set of `Claims` and a private key you can then create a signed token
+Given a `Header`, set of `Claims` and a private key you can then create a signed token. The type of header algorithm used dictates the type of key used
+to sign a set of claims. An `HS*` header can be signed with an `Algorithm.Key.Bytes` key and a `RS*` header can be signed with an Algorithm.Key.Rsa` key.
 
 The result is an `Option` type because a header-defined signing algorithm may not be supported
 
 ```scala
-val token: Option[Array[Byte]] = prints.JWT(header, claims, "secret".getBytes)
+val token: Option[Array[Byte]] =
+  prints.JWT(header, claims, prints.Algorithm.Key.Bytes("secret".getBytes))
 ```
 
 A valid result can then be safely used for HTTP or other transports. The result is URL safe so no additional encoding is required.
