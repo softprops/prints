@@ -32,8 +32,13 @@ class JWTSpec extends FunSpec {
       val header = Header("HS256")
       val claims = Claims("foo" -> "bar")
       val key = "test".getBytes("utf8")
-      val verified = JWT(header, claims, key).map(jwt => JWT.verify(new String(jwt), key))
+      val verified = JWT(header, claims, key).map(jwt => JWT.verify(new String(jwt), key)).flatten
       assert(verified.isDefined)
+      verified.foreach {
+        case (h, c, _) =>
+          assert(h.algo === header.algo)
+          assert(c.get("foo") === claims.get("foo"))          
+      }
     }
   }
 }
