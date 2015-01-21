@@ -4,6 +4,7 @@ import org.json4s.native.JsonMethods.{ compact, parseOpt, render }
 import org.json4s._
 import org.json4s.JsonDSL._
 import scala.util.control.Exception.allCatch
+import scala.concurrent.duration._
 
 /** https://tools.ietf.org/html/draft-ietf-oauth-json-web-token-32#section-4 */
 trait Claims {
@@ -12,10 +13,13 @@ trait Claims {
   def iss = str("iss")
   def sub = str("sub")
   def aud = str("aud")
-  def exp = long("exp")
-  def nbf = long("nbf")
-  def iat = long("iat")
+  def exp = seconds("exp")
+  def nbf = seconds("nbf")
+  def iat = seconds("iat")
   def jti = str("jti")
+
+  def seconds(name: String): Option[FiniteDuration] =
+    long(name).map(_.seconds)
 
   def long(name: String): Option[Long] =
     get(_ match {
