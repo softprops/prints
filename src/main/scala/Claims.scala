@@ -44,9 +44,6 @@ trait Claims {
 
 object Claims {
 
-  private def bytes(json: JValue) =
-    compact(render(json)).getBytes("utf8")
-
   def unapply(s: String): Option[Claims] =
     parseOpt(s).map { obj =>
       new Claims {
@@ -68,7 +65,7 @@ object Claims {
 
   def apply(values: JValue): Claims =
     new Claims {
-      lazy val bytes = Claims.bytes(values)
+      lazy val bytes = compact(render(values)).getBytes("utf8")
       def get(f: JField => Boolean): Option[JValue] =
         values.findField(f).map {
           case (_, value) => value
