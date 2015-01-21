@@ -20,7 +20,6 @@ object Algorithm {
     case class Rsa(pubKey: RSAPublicKey, privKey: RSAPrivateKey) extends Key
   }
 
-
   val None: Algorithm = new Algorithm {
     val bytes = Array.empty[Byte]
     def sign(payload: Array[Byte], key: Key): Array[Byte] =

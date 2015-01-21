@@ -61,5 +61,13 @@ val decoded = jwt match {
 }
 ```
 
+You can verify jwt tokens in two forms by supplying a string jwt and key or the tuple of unpacked components and key. For former is useful if you 
+know the key a head of time, otherwise you may more commonly derive a key to verify based on the `aud` of the claim, in which case you need to first
+unpack the jwt components. In each case the result is Option of the unpacked contents of the jwt
+
+```scala
+val validated: Option[(Header, Claims, Array[Byte])] = prints.JWT.verify(jwt, key)
+```
+
 Doug Tangren (softprops) 2015
 
