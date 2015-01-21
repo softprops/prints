@@ -58,8 +58,7 @@ object JWT {
             else Some(header, claims, sig)
           case algo =>
             val payload = join(encode(header.bytes), encode(claims.bytes))
-            if (Algorithm.sign(algo, payload, key)
-                .exists(Arrays.equals(_, sig))) Some(header, claims, sig)
+            if (Algorithm.verify(algo, payload, key, sig)) Some(header, claims, sig)
             else None
         }
     }

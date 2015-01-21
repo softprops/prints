@@ -2,6 +2,9 @@ package prints
 
 import org.scalatest.FunSpec
 
+import java.security.KeyPairGenerator
+import java.security.interfaces.{ RSAPrivateKey, RSAPublicKey }
+
 class JWTSpec extends FunSpec {
   describe("JWT") {
     it ("should support unsigned tokens") {
@@ -28,9 +31,27 @@ class JWTSpec extends FunSpec {
              === Some("eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJiYXIifQ==.j0C9Km2iSDyASM-A74nriUpCh6PqHQUW-4Gx54WfsJLbI0EyMGdMybqF04YlpJb71F9bC4Qrny4cvB_F3fv3Dw=="))
     }
 
-    it ("should verify what it creates") {
+    it ("should verify HS* signatures") {
       val header = Header("HS256")
       val clients = Map("1" -> Algorithm.Key.Bytes("test".getBytes("utf8")))
+      val claims = Claims("aud" -> "1", "foo" -> "bar")
+      val verified = for {
+        JWT(h, c, s) <- JWT(header, claims, clients("1")).map(new String(_))
+        client       <- c.get("aud")
+        key          <- clients.get(client)
+        (_, vc, _)   <- JWT.verify((h, c, s), key)
+      } yield vc
+      assert(verified.isDefined)
+    }
+
+    it ("should verify RS* signatures") {
+      val header = Header("RS256")
+      val keys = KeyPairGenerator.getInstance("RSA")
+      keys.initialize(512)
+      val pair = keys.genKeyPair()
+      val pub = pair.getPublic.asInstanceOf[RSAPublicKey]
+      val priv = pair.getPrivate.asInstanceOf[RSAPrivateKey]
+      val clients = Map("1" -> Algorithm.Key.Rsa(pub, priv))
       val claims = Claims("aud" -> "1", "foo" -> "bar")
       val verified = for {
         JWT(h, c, s) <- JWT(header, claims, clients("1")).map(new String(_))
