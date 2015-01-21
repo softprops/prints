@@ -3,6 +3,7 @@ package prints
 import org.json4s.native.JsonMethods.{ compact, parseOpt, render }
 import org.json4s._
 import org.json4s.JsonDSL._
+import scala.util.control.Exception.allCatch
 
 /** https://tools.ietf.org/html/draft-ietf-oauth-json-web-token-32#section-4 */
 trait Claims {
@@ -11,10 +12,13 @@ trait Claims {
   def iss = get("iss")
   def sub = get("sub")
   def aud = get("aud")
-  def exp = get("exp")
-  def nbf = get("nbf")
-  def iat = get("iat")
+  def exp = long("exp")
+  def nbf = long("nbf")
+  def iat = long("iat")
   def jti = get("jti")
+
+  def long(name: String): Option[Long] =
+    get(name).flatMap(str => allCatch.opt(str.toLong))
 
   def get(name: String): Option[String]
 
