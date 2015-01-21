@@ -7,7 +7,7 @@ import scala.util.control.Exception.allCatch
 
 /** https://tools.ietf.org/html/draft-ietf-oauth-json-web-token-32#section-4 */
 trait Claims {
-  // register claim names https://tools.ietf.org/html/draft-ietf-oauth-json-web-token-32#section-4.1
+  // registered claim names https://tools.ietf.org/html/draft-ietf-oauth-json-web-token-32#section-4.1
 
   def iss = get("iss")
   def sub = get("sub")
