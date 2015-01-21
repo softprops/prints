@@ -8,6 +8,11 @@ import scala.concurrent.duration._
 
 /** https://tools.ietf.org/html/draft-ietf-oauth-json-web-token-32#section-4 */
 trait Claims {
+
+  def get(f: JField => Boolean): Option[JValue]
+
+  def bytes: Array[Byte]
+
   // registered claim names https://tools.ietf.org/html/draft-ietf-oauth-json-web-token-32#section-4.1
 
   def iss = str("iss")
@@ -40,10 +45,6 @@ trait Claims {
       case JString(value) =>
         value
     }
-
-  def get(f: JField => Boolean): Option[JValue]
-
-  def bytes: Array[Byte]
 }
 
 object Claims {
