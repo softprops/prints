@@ -3,6 +3,7 @@ package prints
 import base64.Encode.urlSafe
 import org.json4s.native.JsonMethods.parseOpt
 import java.util.Arrays
+import scala.concurrent.duration._
 
 object JWT {
   private[this] val dot = ".".getBytes
@@ -49,7 +50,10 @@ object JWT {
     }
 
   /** verifies signature of unpacked jwt */
-  def verify(jwt: (Header, Claims, Array[Byte]), key: Algorithm.Key): Option[(Header, Claims, Array[Byte])] =
+  def verify(
+    jwt: (Header, Claims, Array[Byte]),
+    key: Algorithm.Key,
+    leeway: FiniteDuration = 0.seconds): Option[(Header, Claims, Array[Byte])] =
     jwt match {
       case (header, claims, sig) =>
         header.algo match {
@@ -58,7 +62,12 @@ object JWT {
             else Some(header, claims, sig)
           case algo =>
             val payload = join(encode(header.bytes), encode(claims.bytes))
-            if (Algorithm.verify(algo, payload, key, sig)) Some(header, claims, sig)
+            def claimCheck = {
+              val now = (System.currentTimeMillis() / 1000).seconds + leeway
+              (claims.nbf.map(_ > now).getOrElse(true)
+               && claims.exp.map(_ < now).getOrElse(true))
+            }
+            if (Algorithm.verify(algo, payload, key, sig) && claimCheck) Some(header, claims, sig)
             else None
         }
     }
