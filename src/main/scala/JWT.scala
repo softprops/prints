@@ -1,7 +1,5 @@
 package prints
 
-import base64.Encode.urlSafe
-import org.json4s.native.JsonMethods.parseOpt
 import java.util.Arrays
 import scala.concurrent.duration._
 
@@ -16,6 +14,8 @@ object JWT {
 
   private def decode(str: String) =
     decodeBytes(str).right.map(new String(_, "utf8"))
+
+  private[this] val NoLeeway = 0.seconds
 
   /** join two byte arrays separating with a '.' */
   private def join(a: Array[Byte], b: Array[Byte]) = {
@@ -53,26 +53,20 @@ object JWT {
   def verify(
     jwt: (Header, Claims, Array[Byte]),
     key: Algorithm.Key,
-    leeway: FiniteDuration = 0.seconds): Option[(Header, Claims, Array[Byte])] =
+    leeway: FiniteDuration = NoLeeway): Option[(Header, Claims, Array[Byte])] =
     jwt match {
       case (header, claims, sig) =>
-        header.algo match {
-          case "none" =>
-            if (sig.length == 0) None
-            else Some(header, claims, sig)
-          case algo =>
-            val payload = join(encode(header.bytes), encode(claims.bytes))
-            def claimCheck = {
-              val now = (System.currentTimeMillis() / 1000).seconds + leeway
-              (claims.nbf.map(_ > now).getOrElse(true)
-               && claims.exp.map(_ < now).getOrElse(true))
-            }
-            if (Algorithm.verify(algo, payload, key, sig) && claimCheck) Some(header, claims, sig)
-            else None
+        val payload = join(encode(header.bytes), encode(claims.bytes))
+        def claimCheck = {
+          val now = (System.currentTimeMillis() / 1000).seconds + leeway
+          (claims.nbf.map(_ > now).getOrElse(true)
+           && claims.exp.map(_ < now).getOrElse(true))
         }
+        if (Algorithm.verify(header.algo, payload, key, sig) && claimCheck) Some(header, claims, sig)
+        else None
     }
 
-  /** special case of verify where application is aware of key associated with jwt before inpacking */
+  /** special case of verify where application is aware of key associated with jwt before unpacking */
   def verify(str: String, key: Algorithm.Key): Option[(Header, Claims, Array[Byte])] =
     unapply(str).flatMap(verify(_, key))
 }
