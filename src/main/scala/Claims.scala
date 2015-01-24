@@ -9,8 +9,10 @@ import scala.concurrent.duration._
 /** https://tools.ietf.org/html/draft-ietf-oauth-json-web-token-32#section-4 */
 trait Claims {
 
+  /** @return a option of the json field matching the provided predicate */
   def get(f: JField => Boolean): Option[JValue]
 
+  /** @return a representation of this claim as utf8 bytes */
   def bytes: Array[Byte]
 
   // registered claim names https://tools.ietf.org/html/draft-ietf-oauth-json-web-token-32#section-4.1
@@ -61,13 +63,11 @@ object Claims {
       }
     }
 
+  /** factory for simple string -> string claims */
   def apply(values: (String, String)*): Claims =
-    apply((JObject(Nil) /: values) {
-        case (obj, (key, value)) =>
-          val that = JObject(JField(key, JString(value)) :: Nil)
-          obj.merge(that)
-      })
+    apply(values.toMap)
 
+  /** factory for json claims */
   def apply(values: JValue): Claims =
     new Claims {
       lazy val bytes = compact(render(values)).getBytes("utf8")
