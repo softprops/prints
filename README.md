@@ -24,10 +24,43 @@ val header = prints.Header("HS256")
 
 ### claims
 
-Claims represent some metadata meant for passing between two parties. In practice this can be any arbitrary data. Prints provides factory methods for creating sets of claims from key value pairs of a json4s JValue.
+Claims represent some metadata meant for passing between two parties. In practice this can be any arbitrary data. Prints provides factory methods for creating sets of claims from simple `String` key-value pairs or a `org.json4s.JValue` value.
 
 ```scala
-val claims = prints.Claims("foo" -> "bar")
+val simpleClaims = prints.Claims(
+  "foo" -> "bar"
+)
+```
+
+```scala
+import org.json4s._
+import org.json4s.JsonDSL._
+val complexClaims = prints.Claims(
+  ("foo" -> "bar") ~
+  ("nbf" -> notBeforeTimestamp) ~ 
+  ("scope" -> List("read", "write"))
+)
+```
+
+Because claims can contain arbitrary constraints, a `prints.Claims` instance provides a simple
+query interface with a few typed helpers. A primative query method `get` defined as
+
+```scala
+def get(f: JField => Boolean): Option[JValue]
+```
+
+provides a base for typed helpers like `str` (returns option of String), `long` (returns option of Long), `seconds` returns a finite duration representing seconds. This typed query methods are all implemented in terms of `get`.
+
+```scala
+val bar = complexClaims.str("foo") // Some("bar")
+val scopes = complexClaims.get(_ match {
+  case ("scope", JArray(_)) => true
+  case _ => false
+}).collect {
+  case JArray(scopes) => for {
+    JString(scope) <- scopes
+  } yield scope
+} // Some(List("read", "write"))
 ```
 
 ### making tokens
