@@ -99,7 +99,7 @@ know the key a head of time, otherwise you may more commonly derive a key to ver
 unpack the jwt components. In each case the result is Option of the unpacked contents of the jwt
 
 ```scala
-val validated: Option[(Header, Claims, Array[Byte])] = prints.JWT.verify(jwt, key)
+val validated: Option[(Header, Claims, Array[Byte])] = prints.JWT.verify(jwt, algo, key)
 ```
 
 Doug Tangren (softprops) 2015

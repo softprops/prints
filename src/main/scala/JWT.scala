@@ -52,21 +52,25 @@ object JWT {
   /** verifies signature of unpacked jwt */
   def verify(
     jwt: (Header, Claims, Array[Byte]),
+    algo: String,
     key: Algorithm.Key,
     leeway: FiniteDuration = NoLeeway): Option[(Header, Claims, Array[Byte])] =
     jwt match {
       case (header, claims, sig) =>
-        val payload = join(encode(header.bytes), encode(claims.bytes))
-        def claimCheck = {
-          val now = (System.currentTimeMillis() / 1000).seconds + leeway
-          (claims.nbf.map(_ > now).getOrElse(true)
-           && claims.exp.map(_ < now).getOrElse(true))
+        // https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/
+        if (algo != header.algo) None else {
+          val payload = join(encode(header.bytes), encode(claims.bytes))
+          def claimCheck = {
+            val now = (System.currentTimeMillis() / 1000).seconds + leeway
+            (claims.nbf.map(_ > now).getOrElse(true)
+              && claims.exp.map(_ < now).getOrElse(true))
+          }
+          if (Algorithm.verify(header.algo, payload, key, sig) && claimCheck) Some(header, claims, sig)
+          else None
         }
-        if (Algorithm.verify(header.algo, payload, key, sig) && claimCheck) Some(header, claims, sig)
-        else None
     }
 
   /** special case of verify where application is aware of key associated with jwt before unpacking */
-  def verify(str: String, key: Algorithm.Key): Option[(Header, Claims, Array[Byte])] =
-    unapply(str).flatMap(verify(_, key))
+  def verify(str: String, algo: String, key: Algorithm.Key): Option[(Header, Claims, Array[Byte])] =
+    unapply(str).flatMap(verify(_, algo, key))
 }
