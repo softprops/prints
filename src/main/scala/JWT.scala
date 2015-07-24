@@ -61,9 +61,9 @@ object JWT {
         if (algo != header.algo) None else {
           val payload = join(encode(header.bytes), encode(claims.bytes))
           def claimCheck = {
-            val now = (System.currentTimeMillis() / 1000).seconds + leeway
-            (claims.nbf.map(_ > now).getOrElse(true)
-              && claims.exp.map(_ < now).getOrElse(true))
+            val now = (System.currentTimeMillis() / 1000).seconds
+            (claims.nbf.map(_ < (now + leeway)).getOrElse(true)
+              && claims.exp.map(_ > (now - leeway)).getOrElse(true))
           }
           if (Algorithm.verify(header.algo, payload, key, sig) && claimCheck) Some(header, claims, sig)
           else None
