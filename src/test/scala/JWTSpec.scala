@@ -39,7 +39,7 @@ class JWTSpec extends FunSpec {
         JWT(h, c, s) <- JWT(header, claims, clients("1")).map(new String(_))
         client       <- c.aud
         key          <- clients.get(client)
-        (_, vc, _)   <- JWT.verify((h, c, s), "HS256", key)
+        (_, vc, _)   <- JWT.verify((h, c, s), "HS256", key).right.toOption
       } yield vc
       assert(verified.isDefined)
     }
@@ -57,7 +57,7 @@ class JWTSpec extends FunSpec {
         JWT(h, c, s) <- JWT(header, claims, clients("1")).map(new String(_))
         client       <- c.aud
         key          <- clients.get(client)
-        (_, vc, _)   <- JWT.verify((h, c, s), "RS256", key)
+        (_, vc, _)   <- JWT.verify((h, c, s), "RS256", key).right.toOption
       } yield vc
       assert(verified.isDefined)
     }

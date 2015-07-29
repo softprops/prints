@@ -28,6 +28,9 @@ trait Claims {
   def seconds(name: String): Option[FiniteDuration] =
     long(name).map(_.seconds)
 
+  def int(name: String): Option[Int] =
+    long(name).map(_.toInt)
+
   def long(name: String): Option[Long] =
     get(_ match {
       case (key, JInt(value)) => key == name

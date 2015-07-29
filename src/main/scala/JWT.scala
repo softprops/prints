@@ -6,6 +6,15 @@ import scala.concurrent.duration._
 object JWT {
   private[this] val dot = ".".getBytes
 
+  sealed trait Err
+  object Err {
+    case object UnsupportedAlgo extends Err
+    case object Malformed extends Err
+    case object Expired extends Err
+    case object TooEarly extends Err
+    case object SignatureInvalid extends Err
+  }
+
   private def encode(bytes: Array[Byte]): Array[Byte] =
     base64.Encode.urlSafe(bytes)
 
@@ -54,23 +63,26 @@ object JWT {
     jwt: (Header, Claims, Array[Byte]),
     algo: String,
     key: Algorithm.Key,
-    leeway: FiniteDuration = NoLeeway): Option[(Header, Claims, Array[Byte])] =
+    leeway: FiniteDuration = NoLeeway): Either[Err, (Header, Claims, Array[Byte])] =
     jwt match {
       case (header, claims, sig) =>
         // https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/
-        if (algo != header.algo) None else {
+        if (algo != header.algo) Left(Err.UnsupportedAlgo) else {
           val payload = join(encode(header.bytes), encode(claims.bytes))
-          def claimCheck = {
-            val now = (System.currentTimeMillis() / 1000).seconds
-            (claims.nbf.map(_ < (now + leeway)).getOrElse(true)
-              && claims.exp.map(_ > (now - leeway)).getOrElse(true))
-          }
-          if (Algorithm.verify(header.algo, payload, key, sig) && claimCheck) Some(header, claims, sig)
-          else None
+          val now = (System.currentTimeMillis() / 1000).seconds
+          def nbf = claims.nbf.map(_ < (now + leeway)).getOrElse(true)
+          def exp = claims.exp.map(_ > (now - leeway)).getOrElse(true)
+          def verified = Algorithm.verify(header.algo, payload, key, sig)
+          if (!verified) Left(Err.SignatureInvalid)
+          else if (!exp) Left(Err.Expired)
+          else if (!nbf) Left(Err.TooEarly)
+          else Right(header, claims, sig)
         }
     }
 
   /** special case of verify where application is aware of key associated with jwt before unpacking */
-  def verify(str: String, algo: String, key: Algorithm.Key): Option[(Header, Claims, Array[Byte])] =
-    unapply(str).flatMap(verify(_, algo, key))
+  def verify(str: String, algo: String, key: Algorithm.Key): Either[Err, (Header, Claims, Array[Byte])] =
+    unapply(str).map(Right(_))
+      .getOrElse(Left(Err.Malformed))
+      .right.flatMap(verify(_, algo, key))
 }
