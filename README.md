@@ -10,6 +10,16 @@ a [jwt](https://tools.ietf.org/html/draft-ietf-oauth-json-web-token-32) finger p
 
 In short, jwt defines a standard means of signing arbirary data in JSON format.
 
+## install
+
+At the following to your sbt project's `build.sbt`
+
+```scala
+resolvers += "softprops-maven" at "http://dl.bintray.com/content/softprops/maven"
+
+libraryDependencies += "me.lessis" %% "prints" % "0.1.0"
+```
+
 ## usage
 
 A jwt token is made up of 3 parts. A (JOSE) [header](https://tools.ietf.org/html/draft-ietf-oauth-json-web-token-32#section-5) declaring information about how verify the signature of a set of claims, a set of [claims](https://tools.ietf.org/html/draft-ietf-oauth-json-web-token-32#section-4) this can actually be any arbitrary JSON data, and a signature, generated with a private key using a method specified in header information.

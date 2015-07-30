@@ -2,7 +2,11 @@ organization := "me.lessis"
 
 name := "prints"
 
-version := "0.1.0-SNAPSHOT"
+version := "0.1.0"
+
+description :=  "jwt interface for scala"
+
+homepage := Some(url(s"https://github.com/softprops/${name.value}"))
 
 crossScalaVersions := Seq("2.10.5", "2.11.7")
 
@@ -19,11 +23,13 @@ libraryDependencies ++= Seq(
 licenses := Seq(
   ("MIT", url(s"https://github.com/softprops/${name.value}/blob/${version.value}/LICENSE")))
 
-bintrayPackageLabels := Seq("jwt")
+seq(bintraySettings:_*)
+
+bintray.Keys.packageLabels in bintray.Keys.bintray := Seq("jwt")
 
 pomExtra := (
   <scm>
-    <url>git@github.com:softprops/${name.value}.git</url>
+    <url>git@github.com:softprops/{name.value}.git</url>
     <connection>scm:git:git@github.com:softprops/{name.value}.git</connection>
   </scm>
   <developers>
@@ -32,4 +38,5 @@ pomExtra := (
       <name>Doug Tangren</name>
       <url>https://github.com/softprops</url>
     </developer>
-  </developers>)
+  </developers>
+)
